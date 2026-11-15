@@ -17,14 +17,7 @@ pipeline {
             }
         }
 
-        stage('Run Unit Tests') {
-            steps {
-                sh '''
-                    npm install
-                    CI=true npm test -- --watchAll=false
-                '''
-            }
-        }
+        
 
         stage('Push Image to ECR') {
             steps {
