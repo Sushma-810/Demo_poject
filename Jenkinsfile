@@ -4,7 +4,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Clone the repository
-                git 'https://github.com/username/devops-react-app.git'
+                 git 'https://github.com/Sushma-810/Demo_poject.git'
             }
         }
         stage('Build Image') {
