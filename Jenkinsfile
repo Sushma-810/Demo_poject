@@ -11,26 +11,37 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                script {
-                    dockerImage = docker.build("${ECR_REPO}:${IMAGE_TAG}")
-                }
+                sh '''
+                    docker build -t ${ECR_REPO}:${IMAGE_TAG} .
+                '''
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                sh 'npm test -- --watchAll=false'
+                sh '''
+                    npm install
+                    CI=true npm test -- --watchAll=false
+                '''
             }
         }
 
         stage('Push Image to ECR') {
             steps {
-                sh '''
-                    aws ecr get-login-password --region ${AWS_REGION} |
-                    docker login --username AWS --password-stdin ${ECR_REPO}
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'aws-ecr',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    )
+                ]) {
+                    sh '''
+                        aws ecr get-login-password --region ${AWS_REGION} |
+                        docker login --username AWS --password-stdin ${ECR_REPO}
 
-                    docker push ${ECR_REPO}:${IMAGE_TAG}
-                '''
+                        docker push ${ECR_REPO}:${IMAGE_TAG}
+                    '''
+                }
             }
         }
 
