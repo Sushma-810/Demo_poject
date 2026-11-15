@@ -38,11 +38,15 @@ pipeline {
             }
         }
 
-        stage('Deploy to Docker Swarm') {
-            steps {
-                echo "Swarm deployment will be configured next"
-            }
+        stage('Test SSH to Swarm Manager') {
+    steps {
+        sshagent(['swarm-manager-ssh']) {
+            sh '''
+                ssh -o StrictHostKeyChecking=no ubuntu@54.83.114.40 "docker node ls"
+            '''
         }
+    }
+}
     }
 
     post {
