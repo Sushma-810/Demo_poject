@@ -1,38 +1,48 @@
 pipeline {
     agent any
+
+    environment {
+        AWS_REGION = 'us-east-1'
+        ECR_REPO = '542202863403.dkr.ecr.us-east-1.amazonaws.com/demo-project'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
     stages {
-        stage('Clone Repository') {
-            steps {
-                // Clone the repository
-                 git 'https://github.com/Sushma-810/Demo_poject.git'
-            }
-        }
+
         stage('Build Image') {
             steps {
-                // Build the Docker image
                 script {
-                    dockerImage = docker.build("my-react-app:${env.BUILD_ID}")
+                    dockerImage = docker.build("${ECR_REPO}:${IMAGE_TAG}")
                 }
             }
         }
+
         stage('Run Unit Tests') {
             steps {
-                // Running basic React tests
-                sh 'npm test'
+                sh 'npm test -- --watchAll=false'
             }
         }
-        stage('Deploy Image') {
+
+        stage('Push Image to ECR') {
             steps {
-                // Running the container locally
-                script {
-                    dockerImage.run('-p 8080:80')
-                }
+                sh '''
+                    aws ecr get-login-password --region ${AWS_REGION} |
+                    docker login --username AWS --password-stdin ${ECR_REPO}
+
+                    docker push ${ECR_REPO}:${IMAGE_TAG}
+                '''
+            }
+        }
+
+        stage('Deploy to Docker Swarm') {
+            steps {
+                echo "Swarm deployment will be configured next"
             }
         }
     }
+
     post {
         always {
-            // Cleanup
             cleanWs()
         }
     }
