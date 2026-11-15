@@ -2,16 +2,13 @@ version: "3.8"
 
 services:
   web:
-  image: 542202863403.dkr.ecr.us-east-1.amazonaws.com/demo-project:${IMAGE_TAG}
-
+    image: 542202863403.dkr.ecr.us-east-1.amazonaws.com/demo-project:${IMAGE_TAG}
     ports:
       - "80:80"
-
     deploy:
       replicas: 3
       restart_policy:
         condition: on-failure
-
     networks:
       - app-network
 
